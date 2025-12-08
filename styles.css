@@ -1,97 +1,361 @@
+:root {
+    --bg-gradient: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --accent-silver: linear-gradient(135deg, #e0e0e0 0%, #a0a0a0 100%);
+    --tile-hover-bg: rgba(255, 255, 255, 0.1);
+}
+
 body {
     margin: 0;
     padding: 0;
-    background-color: rgb(10,10,10);
-    color: rgb(240,240,240);
+    background: var(--bg-gradient);
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     flex-direction: column;
-    width: 100vw;
-    font-family: Verdana, Tahoma, sans-serif;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
 }
 
-header {
-    width: 95%;
-    max-width: 788px;
-    display: flex;
-    justify-content: flex-end;
-    padding: 12px;
-    margin-top: 15px;
+/* Header Image Section */
+.header-image-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
-.share-button {
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    background-color: rgb(240,240,240);
+.header-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-.share-button svg {
-    margin-left: 12px;
-    margin-top: 10px;
-    color: rgb(0,0,0);
+.header-img.mobile {
+    display: none;
 }
 
+/* Main Container with Overlap */
 .container {
-    width: 91%;
+    width: 90%;
     max-width: 680px;
-    margin: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin: -60px auto 40px;
+    /* Negative margin to overlap header */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    justify-items: center;
+    position: relative;
+    z-index: 2;
+    /* Ensure it sits on top of the header image */
+}
+
+/* Profile Image */
+.image-container {
+    grid-column: 1 / -1;
+    height: 120px;
+    width: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #1a1a1a;
+    /* Dark border to separate from header */
+    background-image: linear-gradient(white, white), var(--accent-silver);
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 h1 {
-    font-size: 20px;
+    grid-column: 1 / -1;
+    font-size: 24px;
+    margin-bottom: 5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: var(--accent-silver);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-align: center;
+    width: 100%;
+}
+
+h1+h1 {
+    font-size: 16px;
+    margin-top: 0;
     margin-bottom: 30px;
+    font-weight: 400;
+    opacity: 0.8;
 }
 
 a {
     text-decoration: none;
-    color: rgb(240,240,240);
+    color: var(--text-primary);
+    width: auto;
+    display: flex;
+    justify-content: center;
 }
 
 .tile {
-    width: 100%;
-    background-color: rgb(37,37,37);
-    margin: 7px;
-    border-radius: 17px;
+    width: 90px;
+    height: auto;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    margin-bottom: 0;
+    padding: 0;
+    border-radius: 0;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: visible;
 }
 
 .tile:hover {
-    transition: cubic-bezier(.07, 1.41, .82, 1.41) 0.2s;
-    transform: scale(1.02);
-}
-
-.tile-share-button {
-    margin: 8px;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    background-color: rgb(10,10,10);
-}
-
-.tile-share-button svg {
-    margin-left: 12px;
-    margin-top: 10px;
-}
-
-
-.image-container {
-    height: 96px;
-    width: 96px;
-    border-radius: 48px;
-    overflow: hidden;
-}
-
-.image-container img {
-    height: 100%;
+    transform: translateY(-5px);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .icon {
-    margin: 4px 8px;
-    width: 50px;
-    height: 50px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.tile:hover .icon {
+    background: var(--tile-hover-bg);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.icon i {
+    font-size: 32px;
+    color: var(--text-primary);
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+}
+
+.tile p {
+    flex-grow: 0;
+    text-align: center;
+    font-weight: 400;
+    font-size: 13px;
+    margin-top: 8px;
+    padding: 0;
+    letter-spacing: 0.3px;
+    color: var(--text-secondary);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.tile-share-button {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-img.desktop {
+        display: none;
+    }
+
+    .header-img.mobile {
+        display: block;
+    }
+
+    .header-image-container {
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 95%;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .icon i {
+        font-size: 28px;
+    }
+}
+
+/* Brand Colors */
+:root {
+    --linktree-color: #43E660;
+    --portfolio-color: #FFA500;
+    --github-color: #ffffff;
+    --linkedin-color: #0077b5;
+    --instagram-color: #E1306C;
+    --youtube-color: #FF0000;
+    --twitter-color: #1DA1F2;
+    --facebook-color: #1877F2;
+    --whatsapp-color: #25D366;
+    --spotify-color: #1DB954;
+    --email-color: #FFD700;
+    --telegram-color: #0088cc;
+    --snapchat-color: #FFFC00;
+    --pinterest-color: #E60023;
+}
+
+/* Brand Hover Effects */
+.tile.linktree:hover .icon {
+    border-color: var(--linktree-color);
+    box-shadow: 0 0 20px var(--linktree-color);
+}
+
+.tile.linktree:hover .icon i {
+    color: var(--linktree-color);
+}
+
+.tile.portfolio:hover .icon {
+    border-color: var(--portfolio-color);
+    box-shadow: 0 0 20px var(--portfolio-color);
+}
+
+.tile.portfolio:hover .icon i {
+    color: var(--portfolio-color);
+}
+
+.tile.github:hover .icon {
+    border-color: var(--github-color);
+    box-shadow: 0 0 20px var(--github-color);
+}
+
+.tile.github:hover .icon i {
+    color: var(--github-color);
+}
+
+.tile.linkedin:hover .icon {
+    border-color: var(--linkedin-color);
+    box-shadow: 0 0 20px var(--linkedin-color);
+}
+
+.tile.linkedin:hover .icon i {
+    color: var(--linkedin-color);
+}
+
+.tile.instagram:hover .icon {
+    border-color: #E1306C;
+    box-shadow: 0 0 20px #E1306C;
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+}
+
+.tile.instagram:hover .icon i {
+    color: white;
+}
+
+.tile.youtube:hover .icon {
+    border-color: var(--youtube-color);
+    box-shadow: 0 0 20px var(--youtube-color);
+}
+
+.tile.youtube:hover .icon i {
+    color: var(--youtube-color);
+}
+
+.tile.twitter:hover .icon {
+    border-color: var(--twitter-color);
+    box-shadow: 0 0 20px var(--twitter-color);
+}
+
+.tile.twitter:hover .icon i {
+    color: var(--twitter-color);
+}
+
+.tile.facebook:hover .icon {
+    border-color: var(--facebook-color);
+    box-shadow: 0 0 20px var(--facebook-color);
+}
+
+.tile.facebook:hover .icon i {
+    color: var(--facebook-color);
+}
+
+.tile.whatsapp:hover .icon {
+    border-color: var(--whatsapp-color);
+    box-shadow: 0 0 20px var(--whatsapp-color);
+}
+
+.tile.whatsapp:hover .icon i {
+    color: var(--whatsapp-color);
+}
+
+.tile.spotify:hover .icon {
+    border-color: var(--spotify-color);
+    box-shadow: 0 0 20px var(--spotify-color);
+}
+
+.tile.spotify:hover .icon i {
+    color: var(--spotify-color);
+}
+
+.tile.email:hover .icon {
+    border-color: var(--email-color);
+    box-shadow: 0 0 20px var(--email-color);
+}
+
+.tile.email:hover .icon i {
+    color: var(--email-color);
+}
+
+.tile.telegram:hover .icon {
+    border-color: var(--telegram-color);
+    box-shadow: 0 0 20px var(--telegram-color);
+}
+
+.tile.telegram:hover .icon i {
+    color: var(--telegram-color);
+}
+
+.tile.snapchat:hover .icon {
+    border-color: var(--snapchat-color);
+    box-shadow: 0 0 20px var(--snapchat-color);
+}
+
+.tile.snapchat:hover .icon i {
+    color: var(--snapchat-color);
+    text-shadow: 0 0 2px black;
+}
+
+.tile.pinterest:hover .icon {
+    border-color: var(--pinterest-color);
+    box-shadow: 0 0 20px var(--pinterest-color);
+}
+
+.tile.pinterest:hover .icon i {
+    color: var(--pinterest-color);
 }
