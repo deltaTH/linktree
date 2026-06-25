@@ -1,266 +1,1453 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>linktree</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://kit.fontawesome.com/0e9ac7e08b.js" crossorigin="anonymous"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ABHAY SINGH — Climb. Collect. Connect.</title>
+<meta name="description" content="An 8-bit retro arcade portfolio game. Climb platforms, collect social links, and connect with Abhay Singh!">
+<meta name="theme-color" content="#000011">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --pink: #ff2d78;
+  --cyan: #00f5ff;
+  --yellow: #ffe600;
+  --green: #39ff14;
+  --purple: #bf00ff;
+  --font: 'Press Start 2P', monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%;
+  background:#000;
+  overflow:hidden;
+  font-family: var(--font);
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+#root {
+  position:relative;
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  background:#000011;
+}
+canvas#gc {
+  display:block;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  position:absolute;
+}
+
+/* ── Touch Controls ── */
+#tc {
+  position:absolute;
+  bottom:0; left:0; right:0;
+  display:flex; justify-content:space-between;
+  padding:10px 14px 14px;
+  z-index:20;
+  pointer-events:none;
+}
+.dl { display:flex; gap:8px; align-items:flex-end; pointer-events:all; }
+.dr { display:flex; align-items:flex-end; pointer-events:all; }
+.cb {
+  width:56px; height:56px;
+  background:rgba(0,245,255,0.1);
+  border:2px solid rgba(0,245,255,0.5);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; cursor:pointer;
+  pointer-events:all;
+  transition:background .07s, transform .07s, box-shadow .07s;
+  box-shadow: 0 0 12px rgba(0,245,255,0.25), inset 0 0 8px rgba(0,245,255,0.05);
+}
+.cb:active, .cb.on {
+  background:rgba(0,245,255,0.3);
+  transform:scale(0.9);
+  box-shadow:0 0 20px rgba(0,245,255,0.7);
+}
+
+/* ── Popup ── */
+#pop {
+  position:absolute;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%) scale(0);
+  z-index:50;
+  background:#000;
+  border:3px solid var(--yellow);
+  padding:16px 20px;
+  text-align:center;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+  box-shadow:0 0 30px var(--yellow), inset 0 0 15px rgba(255,230,0,.04);
+  min-width:200px;
+}
+#pop.show { transform:translate(-50%,-50%) scale(1); }
+#pop-ico { font-size:26px; margin-bottom:8px; }
+#pop-ttl { color:var(--yellow); font-size:9px; margin-bottom:8px; text-shadow:0 0 8px var(--yellow); }
+#pop-sub { color:#ccc; font-size:6px; line-height:1.9; }
+
+/* ── Overlay Screen ── */
+#ov {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,.93);
+  z-index:60;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  overflow-y:auto;
+  padding:20px 14px 120px;
+}
+#ov h1 { font-size:clamp(16px,4vw,26px); text-align:center; margin-bottom:14px; animation:blink .7s step-end infinite; }
+.gt { color:var(--pink); text-shadow:0 0 18px var(--pink); }
+.wt { color:var(--yellow); text-shadow:0 0 18px var(--yellow); }
+.lg { display:flex; flex-direction:column; gap:8px; width:100%; max-width:360px; margin:8px 0; }
+.lc {
+  background:rgba(0,245,255,.06);
+  border:2px solid var(--cyan);
+  padding:9px 12px;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:0 0 8px rgba(0,245,255,.15);
+}
+.li2 { font-size:18px; flex-shrink:0; }
+.ln { flex:1; }
+.lname { color:var(--cyan); font-size:7px; margin-bottom:4px; }
+.lurl { color:rgba(255,255,255,.5); font-size:5.5px; word-break:break-all; }
+.la { display:flex; gap:5px; }
+.lb {
+  background:transparent;
+  border:1px solid var(--cyan);
+  color:var(--cyan);
+  font-family:var(--font);
+  font-size:5px;
+  padding:4px 7px;
+  cursor:pointer;
+}
+.lb:hover { background:rgba(0,245,255,.15); }
+.xc {
+  background:rgba(255,45,120,.04);
+  border:2px dashed rgba(255,45,120,.25);
+  padding:9px 12px;
+  display:flex; align-items:center; gap:10px;
+  opacity:.4;
+}
+.xc span { color:rgba(255,255,255,.4); font-size:7px; }
+.ob {
+  font-family:var(--font);
+  font-size:9px; padding:12px 22px;
+  cursor:pointer; border:3px solid;
+  background:transparent; margin-top:14px;
+  letter-spacing:1px; transition:all .12s;
+}
+.bp { color:var(--pink); border-color:var(--pink); box-shadow:0 0 12px var(--pink); }
+.bp:hover { background:var(--pink); color:#000; }
+.bg { color:var(--green); border-color:var(--green); box-shadow:0 0 12px var(--green); }
+.bg:hover { background:var(--green); color:#000; }
+.ss { text-align:center; margin:8px 0; }
+.ss p { color:var(--yellow); font-size:7.5px; margin-bottom:5px; }
+
+/* ── Start Screen ── */
+#ss {
+  position:absolute; inset:0;
+  background:#000011;
+  z-index:70;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:18px; padding:20px;
+}
+#ss h1 {
+  color:var(--pink);
+  font-size:clamp(14px,5.5vw,26px);
+  text-align:center;
+  text-shadow:0 0 20px var(--pink),0 0 40px var(--pink);
+  animation:flicker 4s infinite;
+}
+.sub { color:var(--cyan); font-size:clamp(7px,2vw,10px); letter-spacing:3px; }
+.instr { color:rgba(255,255,255,.55); font-size:6px; text-align:center; line-height:2.3; max-width:280px; }
+.sbtn {
+  font-family:var(--font);
+  font-size:10px; padding:13px 26px;
+  cursor:pointer;
+  border:3px solid var(--yellow);
+  background:transparent; color:var(--yellow);
+  box-shadow:0 0 18px var(--yellow);
+  animation:pbtn 1.3s ease-in-out infinite;
+  letter-spacing:2px;
+}
+.sbtn:hover,.sbtn:active { background:var(--yellow); color:#000; }
+
+/* ── CRT ── */
+#crt {
+  position:fixed; inset:0;
+  pointer-events:none; z-index:999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);
+}
+#crt::after {
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%);
+}
+
+/* ── Confetti ── */
+#cf {
+  position:fixed; inset:0;
+  pointer-events:none; z-index:55;
+  display:none;
+}
+
+@keyframes blink { 50%{opacity:0} }
+@keyframes flicker {
+  0%,94%,100%{opacity:1}
+  95%{opacity:.5}
+  97%{opacity:1}
+  98%{opacity:.3}
+  99%{opacity:1}
+}
+@keyframes pbtn {
+  0%,100%{box-shadow:0 0 18px var(--yellow)}
+  50%{box-shadow:0 0 36px var(--yellow),0 0 60px var(--yellow)}
+}
+</style>
 </head>
-
 <body>
+<div id="root">
+  <canvas id="gc"></canvas>
 
-    <!-- Responsive Header Images -->
-    <div class="header-image-container">
-        <!-- REPLACE WITH DESKTOP HEADER IMAGE -->
-        <img src="4_6021769248227985225.jpg" class="header-img desktop" alt="Header Desktop">
-
-        <!-- REPLACE WITH MOBILE HEADER IMAGE -->
-        <img src="4_6021769248227985225.jpg" class="header-img mobile" alt="Header Mobile">
+  <!-- Touch D-Pad -->
+  <div id="tc">
+    <div class="dl">
+      <button class="cb" id="bl" aria-label="Left">◀</button>
+      <button class="cb" id="br2" aria-label="Right">▶</button>
     </div>
-
-    <div class="container">
-        <div class="image-container">
-            <img src="https://ugc.production.linktr.ee/d9837dc3-7b1f-406f-bf31-c997bcd7e5d4_617378461-18415370683190493-1241123040163754070-n.jpeg?io=true&size=avatar-v3_0"
-                alt="Abhay Singh Avatar" />
-        </div>
-        <h1>अभय सिंह</h1>
-        <h1>∆+#</h1>
-
-
-        <a class="tile linktree" href="https://linktr.ee/abhayyy" target="_blank">
-            <div class="icon">
-                <i class="fa-solid fa-3x fa-tree fa-fade"></i>
-            </div>
-
-            <p>LinkTree</p>
-            <div class="tile-share-button" link="https://linktr.ee/abhayyy">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile portfolio" href="https://deltaTH.github.io/portfolio" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-address-card"></i>
-            </div>
-
-            <p>Portfolio</p>
-            <div class="tile-share-button" link="https://deltaTH.github.io/portfolio">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile github" href="https://github.com/deltaTH" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-github" aria-hidden="true"></i>
-            </div>
-
-            <p>Github</p>
-            <div class="tile-share-button" link="https://github.com/deltaTH">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile linkedin" href="https://www.linkedin.com/in/deltath" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-linkedin-square" aria-hidden="true"></i>
-            </div>
-
-            <p>LinkedIn</p>
-            <div class="tile-share-button" link="https://www.linkedin.com/in/deltath/">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile instagram" href="https://instagram.com/d3ltaTH" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-instagram" aria-hidden="true"></i>
-            </div>
-
-            <p>Instagram</p>
-            <div class="tile-share-button" link="https://instagram.com/d3ltaTH">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile youtube" href="https://www.youtube.com/channel/UCInO10OTOE0zVGAp3yka1lw" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-youtube-play" aria-hidden="true"></i>
-            </div>
-            <p>YouTube</p>
-            <div class="tile-share-button" link="https://www.youtube.com/channel/UCInO10OTOE0zVGAp3yka1lw">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-        <a class="tile twitter" href="https://twitter.com/delta_TH_" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-twitter" aria-hidden="true"></i>
-            </div>
-            <p>Twitter</p>
-            <div class="tile-share-button" link="https://twitter.com/delta_TH_">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile facebook" href="https://www.facebook.com/athAbhay" target="_blank">
-            <div class="icon">
-                <i class="fa-brands fa-3x fa-facebook"></i>
-            </div>
-            <p>Facebook</p>
-            <div class="tile-share-button" link="https://www.facebook.com/athAbhay">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile whatsapp" href="https://api.whatsapp.com/send?phone=917355682266" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-whatsapp" aria-hidden="true"></i>
-            </div>
-            <p>WhatsApp</p>
-            <div class="tile-share-button" link="https://api.whatsapp.com/send?phone=917355682266">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile spotify"
-            href="https://open.spotify.com/user/31pdpy4g5c74dm6x5xx57cpfzzri?si=KcVvBoFRRqi1l2Cu8tSJKQ&utm_source=copy-link"
-            target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-spotify" aria-hidden="true"></i>
-
-            </div>
-
-            <p>Spotify</p>
-            <div class="tile-share-button"
-                link="https://open.spotify.com/user/31pdpy4g5c74dm6x5xx57cpfzzri?si=KcVvBoFRRqi1l2Cu8tSJKQ&utm_source=copy-link">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile email" href="mailto:as933155@gmail.com" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-envelope" aria-hidden="true"></i>
-            </div>
-
-            <p>Email</p>
-            <div class="tile-share-button" link="mailto:as933155@gmail.com">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-        <a class="tile telegram" href="https://t.me/DeltaTH" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-telegram" aria-hidden="true"></i>
-            </div>
-
-            <p>Telegram</p>
-            <div class="tile-share-button" link="https://t.me/DeltaTH">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-
-        <a class="tile snapchat" href="https://www.snapchat.com/add/athabhay" target="_blank">
-            <div class="icon">
-                <i class="fa fa-3x fa-snapchat-ghost" aria-hidden="true"></i>
-            </div>
-
-            <p>Snapchat</p>
-            <div class="tile-share-button" link="https://www.snapchat.com/add/athabhay">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-
-        <a class="tile pinterest" href="https://pinterest.com/as933155/" target="_blank">
-            <div class="icon">
-                <i class="fa-brands fa-pinterest fa-3x"></i>
-            </div>
-
-            <p>Pinterest</p>
-            <div class="tile-share-button" link="https://pinterest.com/as933155/">
-                <svg width="16" height="16" viewBox="0 0 16 16" enable-background="new 0 0 24 24"
-                    class="sc-gKsewC iPWGYb">
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M10.6464 3.85347L11 4.20702L11.7071 3.49992L11.3536 3.14636L8.35355 0.146362H7.64645L4.64645 3.14636L4.29289 3.49992L5 4.20702L5.35355 3.85347L7.5 1.70702V9.49992V9.99992H8.5V9.49992V1.70702L10.6464 3.85347ZM1 5.49994L1.5 4.99994H4V5.99994H2V14.9999H14V5.99994H12V4.99994H14.5L15 5.49994V15.4999L14.5 15.9999H1.5L1 15.4999V5.49994Z"
-                        fill="currentColor"></path>
-                </svg>
-            </div>
-        </a>
-
-
-
-
+    <div class="dr" style="flex-direction:column;gap:8px;">
+      <button class="cb" id="bu" aria-label="Climb Up">▲</button>
+      <button class="cb" id="bd" aria-label="Climb Down">▼</button>
     </div>
+  </div>
 
-    <script src="app.js"></script>
+  <!-- Popup -->
+  <div id="pop">
+    <div id="pop-ico">🏆</div>
+    <div id="pop-ttl">LINK UNLOCKED!</div>
+    <div id="pop-sub">—</div>
+  </div>
 
+  <!-- Overlay -->
+  <div id="ov"></div>
+
+  <!-- Start Screen -->
+  <div id="ss">
+    <h1>ABHAY SINGH</h1>
+    <div class="sub">CLIMB · COLLECT · CONNECT</div>
+    <canvas id="pc" width="130" height="110" style="image-rendering:pixelated;border:1px solid rgba(0,245,255,0.2);"></canvas>
+    <div class="instr">
+      COLLECT ALL 14 SOCIAL LINKS<br>
+      AVOID ENEMIES & OBSTACLES<br>
+      5 LIVES — DON'T FALL!<br><br>
+      ◀ ▶ MOVE &nbsp;&nbsp; ▲ CLIMB/JUMP
+    </div>
+    <button class="sbtn" id="sb" onclick="G.start()">▶ INSERT COIN</button>
+    <div style="color:rgba(255,255,255,.25);font-size:5px;text-align:center;letter-spacing:1px;">
+      HIGH SCORE &nbsp;<span id="hsd">000000</span>
+    </div>
+  </div>
+
+  <!-- Confetti -->
+  <canvas id="cf"></canvas>
+</div>
+<div id="crt"></div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════════
+//  LINK DATA
+// ═══════════════════════════════════════════════════════
+const LINKS = [
+  {id:'linktree', name:'LINKTREE',  ico:'🌳', col:'#39e09b', url:'https://linktr.ee/abhaysingh',         hdl:'linktr.ee/abhaysingh'},
+  {id:'youtube',  name:'YOUTUBE',   ico:'▶',  col:'#ff0000', url:'https://youtube.com/@abhaysingh',      hdl:'@abhaysingh'},
+  {id:'pint',     name:'PINTEREST', ico:'📌', col:'#e60023', url:'https://pinterest.com/abhaysingh',     hdl:'pinterest.com/abhaysingh'},
+  {id:'fb',       name:'FACEBOOK',  ico:'f',  col:'#1877f2', url:'https://facebook.com/abhaysingh',      hdl:'fb.com/abhaysingh'},
+  {id:'snap',     name:'SNAPCHAT',  ico:'👻', col:'#fffc00', url:'https://snapchat.com/add/abhaysingh',  hdl:'@abhaysingh'},
+  {id:'spot',     name:'SPOTIFY',   ico:'♪',  col:'#1db954', url:'https://open.spotify.com/user/abhaysingh', hdl:'open.spotify.com/user/..'},
+  {id:'tw',       name:'TWITTER',   ico:'𝕏',  col:'#1da1f2', url:'https://twitter.com/abhaysingh',       hdl:'@abhaysingh'},
+  {id:'ig',       name:'INSTAGRAM', ico:'◉',  col:'#e1306c', url:'https://instagram.com/abhaysingh',     hdl:'@abhaysingh'},
+  {id:'port',     name:'PORTFOLIO', ico:'💼', col:'#bf00ff', url:'https://abhaysingh.dev',               hdl:'abhaysingh.dev'},
+  {id:'gh',       name:'GITHUB',    ico:'⬡',  col:'#f0f0f0', url:'https://github.com/abhaysingh',        hdl:'github.com/abhaysingh'},
+  {id:'li',       name:'LINKEDIN',  ico:'in', col:'#0a66c2', url:'https://linkedin.com/in/abhaysingh',   hdl:'linkedin.com/in/abhaysingh'},
+  {id:'em',       name:'EMAIL',     ico:'✉',  col:'#ff2d78', url:'mailto:abhay@example.com',             hdl:'abhay@example.com'},
+  {id:'tg',       name:'TELEGRAM',  ico:'✈',  col:'#2ca5e0', url:'https://t.me/abhaysingh',              hdl:'t.me/abhaysingh'},
+  {id:'wa',       name:'WHATSAPP',  ico:'✆',  col:'#25d366', url:'https://wa.me/911234567890',           hdl:'+91 12345 67890'},
+];
+
+// ═══════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════
+const CW=360, CH=640, PH=8; // canvas width/height, platform height
+const G_VAL=0.30, JUMP=-8.5, SPD=2.0, CLM=1.6; // slower, more forgiving physics
+const MAX_LIVES=5;
+
+// ═══════════════════════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════════════════════
+let Actx=null;
+const Au={
+  ctx(){ return Actx||(Actx=new(window.AudioContext||window.webkitAudioContext)()); },
+  tone(f,t,d,v=0.28,dl=0){
+    try{
+      const c=this.ctx(),o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.type=t;o.frequency.value=f;
+      g.gain.setValueAtTime(v,c.currentTime+dl);
+      g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dl+d);
+      o.start(c.currentTime+dl);o.stop(c.currentTime+dl+d);
+    }catch(e){}
+  },
+  jump(){ this.tone(280,'square',.1,.2);this.tone(480,'square',.07,.15,.09); },
+  collect(){ [523,659,784,1047].forEach((f,i)=>this.tone(f,'square',.1,.25,i*.07)); },
+  die(){ [380,320,260,200,140].forEach((f,i)=>this.tone(f,'sawtooth',.14,.3,i*.06)); },
+  go(){ [280,230,180,130,90].forEach((f,i)=>this.tone(f,'sawtooth',.2,.4,i*.1)); },
+  win(){ [523,659,784,1047,784,1047,1319].forEach((f,i)=>this.tone(f,'square',.15,.3,i*.1)); },
+  step(){ this.tone(110+Math.random()*40,'square',.03,.07); },
+};
+
+// ═══════════════════════════════════════════════════════
+//  PARTICLES
+// ═══════════════════════════════════════════════════════
+let ptcls=[];
+const Pt={
+  spark(x,y,col,n=14){
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2,s=1.5+Math.random()*3.5;
+      ptcls.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,life:45+Math.random()*20,ml:65,col,sz:2+Math.random()*3,t:'s'});
+    }
+  },
+  coin(x,y){
+    for(let i=0;i<7;i++)
+      ptcls.push({x:x+Math.random()*18-9,y,vx:(Math.random()-.5)*2.5,vy:-4.5-Math.random()*2,life:38,ml:38,col:'#ffe600',sz:5,t:'c'});
+  },
+  dust(x,y){
+    for(let i=0;i<5;i++)
+      ptcls.push({x,y,vx:(Math.random()-.5)*2,vy:-.5-Math.random(),life:12,ml:12,col:'#aaaaff',sz:2,t:'d'});
+  },
+  update(){
+    ptcls.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.14;p.life--;});
+    ptcls=ptcls.filter(p=>p.life>0);
+  },
+  draw(cx){
+    ptcls.forEach(p=>{
+      cx.globalAlpha=p.life/p.ml;
+      cx.fillStyle=p.col;
+      cx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.sz),Math.round(p.sz));
+    });
+    cx.globalAlpha=1;
+  },
+};
+
+// ═══════════════════════════════════════════════════════
+//  GAME OBJECT — main namespace
+// ═══════════════════════════════════════════════════════
+const G={
+  // DOM refs
+  canvas: null, cx: null,
+  W:0, H:0, sc:1, ox:0, oy:0,
+  raf:0, frame:0, running:false,
+  state:'start', // start|playing|dead|gameover|win
+
+  // HUD
+  score:0, hi:0, lives:MAX_LIVES,
+
+  // session
+  unlocked: new Set(),   // persisted
+  session:  new Set(),   // this run
+
+  // world objects
+  platforms:[],
+  movPlatforms:[],
+  disPlatforms:[],
+  ladders:[],
+  collectibles:[],
+  enemies:[],
+  fireballs:[],
+  barrels:[],
+  spikes:[],
+  checkpoints:[],
+  stars:[],
+  respawnX:30, respawnY:0,
+
+  // player
+  P:{
+    x:30,y:0,vx:0,vy:0,w:14,h:20,
+    ground:false,ladder:false,climbing:false,
+    dead:false,dTimer:0,
+    inv:false,iTimer:0,
+    right:true,aFrame:0,aTimer:0,
+    state:'idle',
+  },
+
+  // input
+  keys:{L:false,R:false,U:false,D:false},
+  stepT:0, spawnT:0, popTimer:0,
+
+  // ─── INIT ─────────────────────────────────────────
+  init(){
+    this.canvas=document.getElementById('gc');
+    this.cx=this.canvas.getContext('2d');
+    this.load();
+    document.getElementById('hsd').textContent=String(this.hi).padStart(6,'0');
+    this.resize();
+    window.addEventListener('resize',()=>this.resize());
+    this.bindKeys();
+    this.bindButtons();
+    this.mkStars();
+    this.drawPreview();
+    // draw start-screen animation loop
+    this.startScreenLoop();
+  },
+
+  startScreenLoop(){
+    if(this.state==='start'){
+      this.frame++;
+      this.drawPreview();
+      requestAnimationFrame(()=>this.startScreenLoop());
+    }
+  },
+
+  // ─── RESIZE ────────────────────────────────────────
+  resize(){
+    const con=document.getElementById('root');
+    const cw=con.clientWidth, ch=con.clientHeight;
+    this.sc=Math.min(cw/CW, ch/CH);
+    this.W=Math.round(CW*this.sc);
+    this.H=Math.round(CH*this.sc);
+    this.canvas.width=CW; this.canvas.height=CH;
+    this.canvas.style.width=this.W+'px';
+    this.canvas.style.height=this.H+'px';
+    this.ox=Math.round((cw-this.W)/2);
+    this.oy=Math.round((ch-this.H)/2);
+    this.canvas.style.left=this.ox+'px';
+    this.canvas.style.top=this.oy+'px';
+    this.canvas.style.position='absolute';
+  },
+
+  // ─── STORAGE ───────────────────────────────────────
+  save(){
+    try{
+      localStorage.setItem('ag_hi',this.hi);
+      localStorage.setItem('ag_ul',JSON.stringify([...this.unlocked]));
+    }catch(e){}
+  },
+  load(){
+    try{
+      this.hi=parseInt(localStorage.getItem('ag_hi')||'0');
+      const ul=JSON.parse(localStorage.getItem('ag_ul')||'[]');
+      ul.forEach(id=>this.unlocked.add(id));
+    }catch(e){}
+  },
+
+  // ─── INPUT ─────────────────────────────────────────
+  bindKeys(){
+    const kd=e=>{
+      if(e.key==='ArrowLeft')  this.keys.L=true;
+      if(e.key==='ArrowRight') this.keys.R=true;
+      if(e.key==='ArrowUp'||e.key===' ') this.keys.U=true;
+      if(e.key==='ArrowDown')  this.keys.D=true;
+      if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key)) e.preventDefault();
+    };
+    const ku=e=>{
+      if(e.key==='ArrowLeft')  this.keys.L=false;
+      if(e.key==='ArrowRight') this.keys.R=false;
+      if(e.key==='ArrowUp'||e.key===' ') this.keys.U=false;
+      if(e.key==='ArrowDown')  this.keys.D=false;
+    };
+    document.addEventListener('keydown',kd);
+    document.addEventListener('keyup',ku);
+  },
+  bindButtons(){
+    const mk=(id,key)=>{
+      const b=document.getElementById(id); if(!b) return;
+      const on=e=>{e.preventDefault();this.keys[key]=true;b.classList.add('on');};
+      const off=e=>{e.preventDefault();this.keys[key]=false;b.classList.remove('on');};
+      b.addEventListener('touchstart',on,{passive:false});
+      b.addEventListener('touchend',off,{passive:false});
+      b.addEventListener('touchcancel',off,{passive:false});
+      b.addEventListener('mousedown',on);
+      b.addEventListener('mouseup',off);
+      b.addEventListener('mouseleave',off);
+    };
+    mk('bl','L'); mk('br2','R'); mk('bu','U'); mk('bd','D');
+  },
+
+  // ─── STARS ─────────────────────────────────────────
+  mkStars(){
+    this.stars=[];
+    for(let i=0;i<50;i++) this.stars.push({x:Math.random()*CW,y:Math.random()*CH,sz:Math.random()>.8?2:1,ph:Math.random()*Math.PI*2});
+  },
+  drawStars(cx){
+    this.stars.forEach(s=>{
+      const a=.25+.7*Math.abs(Math.sin(s.ph+this.frame*.02));
+      cx.globalAlpha=a; cx.fillStyle='#ffffff';
+      cx.fillRect(s.x,s.y,s.sz,s.sz);
+    });
+    cx.globalAlpha=1;
+  },
+
+  // ─── BUILD LEVEL ───────────────────────────────────
+  build(){
+    this.platforms=[]; this.movPlatforms=[]; this.disPlatforms=[];
+    this.ladders=[]; this.collectibles=[]; this.enemies=[];
+    this.fireballs=[]; this.barrels=[]; this.spikes=[];
+
+    const TOP=68, BOT=612;
+    const PLAY=BOT-TOP, FH=PLAY/14;
+
+    const fy=n=>Math.round(BOT-n*FH);
+
+    // Ground
+    this.platforms.push({x:0,y:fy(0),w:CW,h:PH,t:'s'});
+
+    // Floor definitions — EASY MODE: slow enemies, fewer hazards, generous platforms
+    const floors=[
+      // Floor 1 — Linktree (very easy, no enemies near spawn)
+      {n:1, segs:[{x:0,w:160},{x:220,w:140}], lads:[{x:130,h:FH}], ci:0, en:[{x:260,t:'w'}], sp:[]},
+      // Floor 2 — YouTube
+      {n:2, segs:[{x:10,w:210},{x:270,w:90}], lads:[{x:270,h:FH}], ci:1, en:[], sp:[{x:230,w:20}]},
+      // Floor 3 — Pinterest
+      {n:3, segs:[{x:0,w:100},{x:150,w:140},{x:310,w:50}], lads:[{x:55,h:FH},{x:310,h:FH*.6}], ci:2, en:[{x:200,t:'w'}], sp:[]},
+      // Floor 4 — Facebook
+      {n:4, segs:[{x:40,w:110},{x:190,w:130}], lads:[{x:110,h:FH},{x:290,h:FH}], ci:3, en:[{x:220,t:'b'}], sp:[]},
+      // Floor 5 — Snapchat
+      {n:5, segs:[{x:0,w:130},{x:210,w:150}], lads:[{x:95,h:FH}], ci:4, en:[{x:270,t:'w'}], sp:[{x:165,w:22}], mv:true},
+      // Floor 6 — Spotify
+      {n:6, segs:[{x:50,w:110},{x:220,w:140}], lads:[{x:130,h:FH},{x:330,h:FH}], ci:5, en:[{x:260,t:'b'}], sp:[]},
+      // Floor 7 — Twitter
+      {n:7, segs:[{x:0,w:90},{x:140,w:110},{x:280,w:80}], lads:[{x:60,h:FH}], ci:6, en:[{x:310,t:'w'}], sp:[{x:250,w:18}], dis:true},
+      // Floor 8 — Instagram
+      {n:8, segs:[{x:20,w:180},{x:250,w:110}], lads:[{x:170,h:FH},{x:315,h:FH}], ci:7, en:[{x:250,t:'w'}], sp:[], mv:true},
+      // Floor 9 — Portfolio
+      {n:9, segs:[{x:0,w:80},{x:150,w:100},{x:290,w:70}], lads:[{x:40,h:FH}], ci:8, en:[{x:300,t:'b'}], sp:[{x:115,w:22}]},
+      // Floor 10 — GitHub
+      {n:10, segs:[{x:60,w:140},{x:260,w:100}], lads:[{x:165,h:FH},{x:330,h:FH}], ci:9, en:[{x:295,t:'w'}], sp:[], dis:true},
+      // Floor 11 — LinkedIn
+      {n:11, segs:[{x:0,w:100},{x:170,w:90},{x:300,w:60}], lads:[{x:65,h:FH}], ci:10, en:[{x:310,t:'b'}], sp:[{x:130,w:20}]},
+      // Floor 12 — Email
+      {n:12, segs:[{x:30,w:90},{x:180,w:120},{x:320,w:40}], lads:[{x:90,h:FH},{x:285,h:FH}], ci:11, en:[{x:220,t:'f'}], sp:[], mv:true},
+      // Floor 13 — Telegram
+      {n:13, segs:[{x:0,w:80},{x:160,w:90},{x:295,w:65}], lads:[{x:35,h:FH},{x:225,h:FH}], ci:12, en:[{x:300,t:'b'}], sp:[{x:130,w:18}]},
+      // Floor 14 — WhatsApp (TOP)
+      {n:14, segs:[{x:80,w:200}], lads:[], ci:13, en:[{x:215,t:'w'}], sp:[{x:290,w:18}]},
+    ];
+
+    floors.forEach((fd,fi)=>{
+      const py=fy(fd.n);
+
+      // Segments
+      fd.segs.forEach((seg,si)=>{
+        let sw=seg.w;
+
+        // Disappearing suffix
+        if(fd.dis && si===fd.segs.length-1 && sw>50){
+          const dw=Math.min(50,sw-10);
+          this.disPlatforms.push({x:seg.x+sw-dw,y:py,w:dw,h:PH,timer:0,gone:false,rch:0,t:'d'});
+          sw-=dw;
+        }
+
+        // Moving platform on some floors (replace part of a wide segment)
+        if(fd.mv && si===0 && sw>70){
+          const mx=seg.x+sw-60;
+          this.movPlatforms.push({x:mx,y:py,w:55,h:PH,sx:mx,ex:seg.x+sw-5,spd:.35+fi*.02,dir:1,t:'m'}); // much slower
+          sw-=60;
+        }
+
+        this.platforms.push({x:seg.x,y:py,w:sw,h:PH,t:'s'});
+      });
+
+      // Ladders — y=py so they span FROM this floor DOWN to the floor below
+      fd.lads.forEach(l=>{
+        this.ladders.push({x:l.x-3, y:py, h:l.h, w:18});
+      });
+
+      // Collectible — random position on a random segment
+      const cSeg=fd.segs[Math.floor(Math.random()*fd.segs.length)];
+      const cxPos=cSeg.x+10+Math.floor(Math.random()*Math.max(10,cSeg.w-28));
+      this.collectibles.push({
+        x:cxPos, y:py-26, li:fd.ci, w:18,h:18,
+        got:false, bob:Math.random()*Math.PI*2,
+      });
+
+      // Checkpoints on floors 4, 8, 12
+      if([4,8,12].includes(fd.n)){
+        const cpSeg=fd.segs[Math.floor(fd.segs.length/2)];
+        const cpX=cpSeg.x+Math.floor(cpSeg.w/3);
+        this.checkpoints.push({x:cpX, y:py-22, floorN:fd.n, active:false, w:14, h:22});
+      }
+
+      // Enemies — random x within a random segment (easy speeds)
+      const eFloor=py;
+      fd.en.forEach(e=>{
+        const eSeg=fd.segs[Math.floor(Math.random()*fd.segs.length)];
+        const ex=eSeg.x+10+Math.random()*Math.max(10,eSeg.w-24);
+        if(e.t==='w') this.enemies.push({x:ex,y:eFloor-16,vx:.45*(fi%2?1:-1),vy:0,w:14,h:14,t:'w',fl:eFloor});
+        else if(e.t==='b') this.enemies.push({x:ex,y:eFloor-14,vx:.7,vy:-2.5,w:12,h:12,t:'b',fl:eFloor});
+        else if(e.t==='f') this.enemies.push({x:ex,y:eFloor-10,vx:0,vy:0,w:10,h:10,t:'f',fl:eFloor,ft:0});
+      });
+
+      // Spikes
+      fd.sp.forEach(s=>{ if(s.w>0) this.spikes.push({x:s.x,y:py-8,w:s.w,h:8}); });
+    });
+  },
+
+  // ─── RESET PLAYER ──────────────────────────────────
+  resetP(){
+    const gnd=this.platforms[0];
+    const P=this.P;
+    // Spawn at last activated checkpoint, else at ground start
+    P.x=this.respawnX; P.y=this.respawnY;
+    P.vx=0; P.vy=0;
+    P.ground=false; P.ladder=false; P.climbing=false;
+    P.dead=false; P.dTimer=0;
+    P.inv=true; P.iTimer=200;
+    P.state='idle'; P.aFrame=0;
+    P.right=true;
+  },
+
+  // ─── ALL PLATFORMS ─────────────────────────────────
+  allP(){
+    const a=[...this.platforms,...this.movPlatforms];
+    this.disPlatforms.forEach(d=>{ if(!d.gone) a.push(d); });
+    return a;
+  },
+
+  // ─── COLLISION ─────────────────────────────────────
+  hit(ax,ay,aw,ah,bx,by,bw,bh){
+    return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
+  },
+
+  // ─── UPDATE WORLD ──────────────────────────────────
+  updMov(){
+    this.movPlatforms.forEach(mp=>{
+      mp.x+=mp.spd*mp.dir;
+      if(mp.x>=mp.ex||mp.x<=mp.sx) mp.dir*=-1;
+    });
+  },
+  updDis(){
+    const P=this.P;
+    this.disPlatforms.forEach(dp=>{
+      if(!dp.gone){
+        const on=this.hit(P.x,P.y+P.h-2,P.w,4,dp.x,dp.y,dp.w,dp.h);
+        if(on) dp.timer++;
+        if(dp.timer>100){ dp.gone=true; dp.timer=0; dp.rch=0; }
+      } else {
+        dp.rch++;
+        if(dp.rch>200){ dp.gone=false; dp.timer=0; }
+      }
+    });
+  },
+  updEnemies(){
+    this.enemies.forEach(e=>{
+      if(e.t==='w'){
+        e.x+=e.vx;
+        let onP=false;
+        this.platforms.forEach(p=>{
+          if(e.x+e.w>p.x&&e.x<p.x+p.w&&Math.abs((e.y+e.h)-p.y)<6) onP=true;
+        });
+        if(!onP||e.x<0||e.x+e.w>CW){ e.vx*=-1; e.x+=e.vx*3; }
+      } else if(e.t==='b'){
+        e.vy+=G_VAL*.5; // gentler gravity for bouncers
+        e.x+=e.vx; e.y+=e.vy;
+        this.platforms.forEach(p=>{
+          if(this.hit(e.x,e.y,e.w,e.h,p.x,p.y,p.w,p.h+2)&&e.vy>0){
+            e.y=p.y-e.h; e.vy=-2.5; // lower bounce height
+          }
+        });
+        if(e.x<0||e.x+e.w>CW) e.vx*=-1;
+      } else if(e.t==='f'){
+        e.ft++;
+        if(e.ft>180){ // fire much less frequently
+          this.fireballs.push({x:e.x,y:e.y,vx:1.2*(Math.random()>.5?1:-1),vy:-1.0,life:70});
+          e.ft=0;
+        }
+      }
+    });
+    this.fireballs.forEach(f=>{
+      f.x+=f.vx; f.y+=f.vy; f.vy+=.05; f.life--;
+      if(f.x<0||f.x>CW) f.vx*=-1;
+    });
+    this.fireballs=this.fireballs.filter(f=>f.life>0);
+  },
+  updBarrels(){
+    // spawn barrel from top only after 11 links collected (late game only)
+    if(this.session.size>10){
+      this.spawnT++;
+      if(this.spawnT>400){ // much less frequent
+        this.spawnT=0;
+        this.barrels.push({x:CW-18,y:70,vx:-1.2,vy:0,w:12,h:12}); // slower barrel
+      }
+    }
+    this.barrels.forEach(b=>{
+      b.vy+=G_VAL*.35;
+      b.x+=b.vx; b.y+=b.vy;
+      this.allP().forEach(p=>{
+        if(this.hit(b.x,b.y,b.w,b.h,p.x,p.y,p.w,p.h)&&b.vy>0){
+          b.y=p.y-b.h; b.vy=0;
+          b.vx=(b.x>CW/2)?-1.2:1.2;
+        }
+      });
+      if(b.x<-30||b.x>CW+30||b.y>CH+30) b.dead=true;
+    });
+    this.barrels=this.barrels.filter(b=>!b.dead);
+  },
+
+  // ─── UPDATE PLAYER ─────────────────────────────────
+  updPlayer(){
+    const P=this.P;
+    if(P.dead){ P.dTimer++; return; }
+    if(P.inv){ P.iTimer--; if(P.iTimer<=0) P.inv=false; }
+
+    const K=this.keys;
+
+    // Ladder check — generous ±20px from ladder center
+    P.ladder=false;
+    P.onLadderX=null;
+    this.ladders.forEach(l=>{
+      const pc=P.x+P.w/2;
+      const lc=l.x+l.w/2;
+      const inX=Math.abs(pc-lc)<22;
+      // Normal overlap (player body inside ladder)
+      const inY=P.y+P.h > l.y+4 && P.y < l.y+l.h-2;
+      if(inX && inY){ P.ladder=true; P.onLadderX=lc; }
+
+      // TOP-ENTRY: player standing on platform where ladder begins, pressing ▼
+      // Feet are right at ladder top (within 8px), pressing down
+      if(!P.ladder && inX && K.D && P.ground && Math.abs((P.y+P.h)-l.y)<=8){
+        P.ladder=true; P.onLadderX=lc; P.climbing=true;
+        P.ground=false;
+        P.y+=5; // push past the platform surface into the ladder zone
+      }
+    });
+
+    // Horizontal
+    let moving=false;
+    if(K.L){ P.vx=-SPD; P.right=false; moving=true; }
+    else if(K.R){ P.vx=SPD; P.right=true; moving=true; }
+    else P.vx*=.55;
+
+    // Vertical / ladder
+    if(P.ladder&&K.U){
+      P.vy=-CLM; P.climbing=true;
+      // Gently snap x toward ladder center so player stays on it
+      if(P.onLadderX!==null) P.x+=(P.onLadderX-P.w/2-P.x)*.18;
+    } else if(P.ladder&&K.D){
+      P.vy=CLM; P.climbing=true;
+      if(P.onLadderX!==null) P.x+=(P.onLadderX-P.w/2-P.x)*.18;
+    } else if(P.ladder){
+      // Touching ladder but no key — grip it, stop gravity
+      P.vy=0; P.climbing=true;
+    } else {
+      P.climbing=false;
+      P.vy+=G_VAL;
+    }
+    if(!P.ladder) P.climbing=false;
+
+    // Jump only when on solid ground and NOT gripping a ladder
+    if(K.U&&P.ground&&!P.ladder){
+      P.vy=JUMP; P.ground=false;
+      Au.jump();
+      Pt.dust(P.x+P.w/2,P.y+P.h);
+    }
+
+    P.x+=P.vx; P.y+=P.vy;
+    if(P.x<0) P.x=0;
+    if(P.x+P.w>CW) P.x=CW-P.w;
+
+    // Platform collisions
+    P.ground=false;
+    this.allP().forEach(p=>{
+      const prevB=P.y+P.h-P.vy;
+      const curB=P.y+P.h;
+      if(P.x+P.w>p.x&&P.x<p.x+p.w){
+        // Landing check — skip if player is climbing DOWN through this platform
+        // (prevB <= p.y means player was at/above platform top — they're passing through it)
+        const passingThrough = P.climbing && P.vy>0 && prevB<=p.y+2;
+        if(!passingThrough && prevB<=p.y+4 && curB>=p.y && P.vy>=0){
+          P.y=p.y-P.h; P.vy=0; P.ground=true;
+        }
+        // Head-bump only when not on a ladder (climbing up passes freely through platforms)
+        if(!P.climbing && P.y>=p.y-2 && P.y<=p.y+p.h && P.vy<0){
+          P.y=p.y+p.h; P.vy=0;
+        }
+      }
+    });
+
+    // Step sound
+    if(P.ground&&moving){ this.stepT++; if(this.stepT>16){this.stepT=0;Au.step();} } else this.stepT=0;
+
+    // State & anim
+    P.aTimer++;
+    if(P.aTimer>4){ P.aTimer=0; P.aFrame++; }
+    if(P.ground) P.state=moving?'run':'idle';
+    else if(P.climbing) P.state='climb';
+    else P.state=P.vy<0?'jump':'fall';
+  },
+
+  // ─── CHECK HAZARDS ─────────────────────────────────
+  checkHazards(){
+    const P=this.P;
+    if(P.inv||P.dead) return;
+    const pb=(dx,dy,dw,dh)=>this.hit(P.x+dx,P.y+dy,P.w+dw,P.h+dh,0,0,0,0); // unused
+    const pp=(dx=2,dy=2,dw=-4,dh=-4)=>({x:P.x+dx,y:P.y+dy,w:P.w+dw,h:P.h+dh});
+    const {x:px,y:py,w:pw,h:ph}=pp();
+
+    const touch=(bx,by,bw,bh)=>this.hit(px,py,pw,ph,bx,by,bw,bh);
+
+    let hurt=false;
+    this.enemies.forEach(e=>{ if(e.t!=='f'&&touch(e.x,e.y,e.w,e.h)) hurt=true; });
+    this.fireballs.forEach(f=>{ if(touch(f.x,f.y,10,10)) hurt=true; });
+    this.spikes.forEach(s=>{ if(this.hit(P.x+2,P.y+P.h-4,P.w-4,4,s.x,s.y,s.w,s.h)) hurt=true; });
+    this.barrels.forEach(b=>{ if(touch(b.x,b.y,b.w,b.h)) hurt=true; });
+    // Only kill if player falls WELL below all platforms (true pit fall)
+    if(P.y > CH + 30) hurt=true;
+
+    if(hurt) this.hitPlayer();
+  },
+  hitPlayer(){
+    const P=this.P;
+    if(P.inv||P.dead) return;
+    Au.die();
+    this.lives--;
+    this.score=Math.max(0,this.score-50);
+    Pt.spark(P.x+P.w/2,P.y+P.h/2,'#ff4400',12);
+    P.dead=true; P.dTimer=0;
+
+    if(this.lives<=0){
+      setTimeout(()=>{ this.state='gameover'; Au.go(); this.showOv('go'); },1200);
+    } else {
+      setTimeout(()=>this.resetP(),900);
+    }
+  },
+
+  // ─── CHECK COLLECTIBLES ────────────────────────────
+  checkCollect(){
+    const P=this.P;
+    this.collectibles.forEach(c=>{
+      if(c.got) return;
+      if(this.hit(P.x,P.y,P.w,P.h,c.x,c.y,c.w,c.h)){
+        c.got=true;
+        const li=LINKS[c.li];
+        this.session.add(li.id);
+        this.unlocked.add(li.id);
+        this.score+=100;
+        if(this.score>this.hi) this.hi=this.score;
+        this.save();
+        Pt.spark(c.x+c.w/2,c.y+c.h/2,li.col||'#ffe600',22);
+        Pt.coin(c.x+c.w/2,c.y);
+        Au.collect();
+        this.showPop(li);
+        if(this.session.size===LINKS.length){
+          this.score+=500;
+          if(this.score>this.hi) this.hi=this.score;
+          this.save();
+          setTimeout(()=>{ this.state='win'; Au.win(); this.startConfetti(); this.showOv('win'); },2200);
+        }
+      }
+    });
+  },
+
+  // ─── POPUP ─────────────────────────────────────────
+  showPop(li){
+    const pop=document.getElementById('pop');
+    document.getElementById('pop-ico').textContent=li.ico;
+    document.getElementById('pop-ttl').textContent=li.name+' UNLOCKED!';
+    document.getElementById('pop-sub').textContent=li.hdl||li.url;
+    pop.classList.add('show');
+    clearTimeout(this.popTimer);
+    this.popTimer=setTimeout(()=>pop.classList.remove('show'),2400);
+  },
+
+  // ─── OVERLAY ───────────────────────────────────────
+  showOv(type){
+    const ov=document.getElementById('ov');
+    ov.innerHTML=''; ov.style.display='flex';
+    const h1=document.createElement('h1');
+
+    if(type==='go'){
+      h1.className='gt'; h1.textContent='GAME OVER';
+      ov.appendChild(h1);
+
+      const ss=document.createElement('div'); ss.className='ss';
+      ss.innerHTML=`<p>SCORE: ${String(this.score).padStart(6,'0')}</p><p>BEST: ${String(this.hi).padStart(6,'0')}</p>`;
+      ov.appendChild(ss);
+
+      const s2=document.createElement('div');
+      s2.style.cssText='color:#00f5ff;font-size:7px;text-align:center;margin:8px 0 14px;';
+      s2.textContent=this.session.size>0?`${this.session.size} OF 14 LINKS COLLECTED`:'NO LINKS COLLECTED';
+      ov.appendChild(s2);
+
+      if(this.session.size>0){
+        const cl=document.createElement('div');
+        cl.style.cssText='color:#39ff14;font-size:7px;margin-bottom:8px;text-align:center;';
+        cl.textContent='✅ COLLECTED';
+        ov.appendChild(cl);
+        const lg=document.createElement('div'); lg.className='lg';
+        [...this.session].forEach(id=>{ const li=LINKS.find(l=>l.id===id); if(li) lg.appendChild(this.mkCard(li)); });
+        ov.appendChild(lg);
+      }
+
+      const locked=LINKS.length-this.session.size;
+      if(locked>0){
+        const ll=document.createElement('div');
+        ll.style.cssText='color:#ff2d78;font-size:7px;margin:14px 0 8px;text-align:center;';
+        ll.textContent=`🔒 ${locked} LOCKED`;
+        ov.appendChild(ll);
+        const lg2=document.createElement('div'); lg2.className='lg';
+        for(let i=0;i<locked;i++){
+          const xc=document.createElement('div'); xc.className='xc';
+          xc.innerHTML='<span>🔒 &nbsp;???</span>';
+          lg2.appendChild(xc);
+        }
+        ov.appendChild(lg2);
+      }
+
+      const btn=document.createElement('button');
+      btn.className='ob bp'; btn.textContent='▶ TRY AGAIN';
+      btn.onclick=()=>{ ov.style.display='none'; this.start(); };
+      ov.appendChild(btn);
+
+    } else {
+      h1.className='wt'; h1.textContent='🏆 YOU WIN!';
+      ov.appendChild(h1);
+
+      const ss=document.createElement('div'); ss.className='ss';
+      ss.innerHTML=`<p>SCORE: ${String(this.score).padStart(6,'0')}</p><p>BEST: ${String(this.hi).padStart(6,'0')}</p>`;
+      ov.appendChild(ss);
+
+      const s2=document.createElement('div');
+      s2.style.cssText='color:#00f5ff;font-size:7px;text-align:center;margin:8px 0 14px;';
+      s2.textContent='ALL 14 LINKS UNLOCKED! 🎉';
+      ov.appendChild(s2);
+
+      const lg=document.createElement('div'); lg.className='lg';
+      LINKS.forEach(li=>lg.appendChild(this.mkCard(li)));
+      ov.appendChild(lg);
+
+      const btn=document.createElement('button');
+      btn.className='ob bg'; btn.textContent='▶ PLAY AGAIN';
+      btn.onclick=()=>{ ov.style.display='none'; document.getElementById('cf').style.display='none'; this.start(); };
+      ov.appendChild(btn);
+    }
+  },
+  mkCard(li){
+    const d=document.createElement('div'); d.className='lc';
+    d.innerHTML=`
+      <div class="li2">${li.ico}</div>
+      <div class="ln">
+        <div class="lname" style="color:${li.col||'#00f5ff'}">${li.name}</div>
+        <div class="lurl">${li.hdl||li.url}</div>
+      </div>
+      <div class="la">
+        <button class="lb" onclick="window.open('${li.url}','_blank')">OPEN</button>
+        <button class="lb" onclick="G.copy('${li.url}',this)">COPY</button>
+      </div>`;
+    return d;
+  },
+  copy(url,btn){
+    navigator.clipboard.writeText(url)
+      .then(()=>{ btn.textContent='✓'; setTimeout(()=>btn.textContent='COPY',1200); })
+      .catch(()=>{ btn.textContent='ERR'; setTimeout(()=>btn.textContent='COPY',1200); });
+  },
+
+  // ─── CONFETTI ──────────────────────────────────────
+  cfPts:[], cfId:null,
+  startConfetti(){
+    const cc=document.getElementById('cf');
+    cc.width=window.innerWidth; cc.height=window.innerHeight;
+    cc.style.display='block';
+    this.cfPts=[];
+    for(let i=0;i<130;i++) this.cfPts.push({
+      x:Math.random()*cc.width, y:Math.random()*cc.height-cc.height,
+      vx:(Math.random()-.5)*3, vy:2+Math.random()*3.5,
+      col:['#ff2d78','#00f5ff','#ffe600','#39ff14','#bf00ff'][Math.floor(Math.random()*5)],
+      sz:6+Math.random()*9, rot:Math.random()*Math.PI*2, rv:(Math.random()-.5)*.2,
+    });
+    this.animCf();
+  },
+  animCf(){
+    const cc=document.getElementById('cf');
+    if(!cc||cc.style.display==='none') return;
+    const cx=cc.getContext('2d');
+    cx.clearRect(0,0,cc.width,cc.height);
+    this.cfPts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy; p.rot+=p.rv;
+      if(p.y>cc.height){ p.y=-p.sz; p.x=Math.random()*cc.width; }
+      cx.save(); cx.translate(p.x,p.y); cx.rotate(p.rot);
+      cx.fillStyle=p.col;
+      cx.fillRect(-p.sz/2,-p.sz/4,p.sz,p.sz/2);
+      cx.restore();
+    });
+    this.cfId=requestAnimationFrame(()=>this.animCf());
+  },
+
+  // ─── START ─────────────────────────────────────────
+  start(){
+    document.getElementById('ss').style.display='none';
+    document.getElementById('ov').style.display='none';
+    document.getElementById('pop').classList.remove('show');
+    if(this.cfId){ cancelAnimationFrame(this.cfId); this.cfId=null; }
+    document.getElementById('cf').style.display='none';
+
+    this.score=0; this.lives=MAX_LIVES;
+    this.session=new Set();
+    ptcls=[]; this.fireballs=[]; this.barrels=[];
+    this.frame=0; this.spawnT=0;
+    this.state='playing';
+    // Reset respawn to ground start
+    this.respawnX=30;
+
+    this.build();
+    this.mkStars();
+    // Set respawnY to ground level after build
+    this.respawnY=this.platforms[0].y-this.P.h;
+    this.resetP();
+
+    if(!this.running){
+      this.running=true;
+      this.loop();
+    }
+  },
+
+  // ─── MAIN LOOP ─────────────────────────────────────
+  loop(){
+    if(!this.running) return;
+    this.frame++;
+    const cx=this.cx;
+    cx.clearRect(0,0,CW,CH);
+
+    // Background
+    const bg=cx.createLinearGradient(0,0,0,CH);
+    bg.addColorStop(0,'#000018'); bg.addColorStop(1,'#060008');
+    cx.fillStyle=bg; cx.fillRect(0,0,CW,CH);
+
+    this.drawStars(cx);
+
+    // World
+    this.platforms.forEach(p=>this.dPlatform(cx,p));
+    this.movPlatforms.forEach(p=>this.dMovP(cx,p));
+    this.disPlatforms.forEach(p=>this.dDisP(cx,p));
+    this.ladders.forEach(l=>this.dLadder(cx,l));
+    this.spikes.forEach(s=>this.dSpike(cx,s));
+    this.checkpoints.forEach(cp=>this.dCheckpoint(cx,cp));
+    this.collectibles.forEach(c=>this.dCollect(cx,c));
+    this.enemies.forEach(e=>this.dEnemy(cx,e));
+    this.fireballs.forEach(f=>this.dFireball(cx,f));
+    this.barrels.forEach(b=>this.dBarrel(cx,b));
+    Pt.draw(cx);
+    this.dPlayer(cx);
+    this.dHUD(cx);
+
+    // Update
+    if(this.state==='playing'){
+      this.updPlayer();
+      this.updMov();
+      this.updDis();
+      this.updEnemies();
+      this.updBarrels();
+      Pt.update();
+      this.checkCollect();
+      this.checkHazards();
+      this.checkCheckpoints();
+    }
+
+    requestAnimationFrame(()=>this.loop());
+  },
+
+  // ─── DRAW PLATFORM ─────────────────────────────────
+  dPlatform(cx,p){
+    const x=Math.round(p.x),y=Math.round(p.y),w=Math.round(p.w);
+    cx.fillStyle='#cc1a5a'; cx.fillRect(x,y,w,PH);        // body
+    cx.fillStyle='#ff2d78'; cx.fillRect(x,y+2,w,PH-4);    // face
+    cx.fillStyle='#ff6ea3'; cx.fillRect(x,y,w,2);          // top highlight
+    cx.fillStyle='#881040'; cx.fillRect(x,y+PH-2,w,2);     // bottom shadow
+    // rivets
+    cx.fillStyle='#ff0060';
+    for(let rx=x+7;rx<x+w-5;rx+=18){ cx.fillRect(rx,y+2,4,4); }
+    // glow
+    cx.shadowColor='#ff2d78'; cx.shadowBlur=5;
+    cx.strokeStyle='#ff2d78'; cx.lineWidth=.5;
+    cx.strokeRect(x+.5,y+.5,w-1,PH-1);
+    cx.shadowBlur=0;
+  },
+  dMovP(cx,p){
+    const x=Math.round(p.x),y=Math.round(p.y),w=Math.round(p.w);
+    cx.shadowColor='#00f5ff'; cx.shadowBlur=10;
+    cx.fillStyle='#006680'; cx.fillRect(x,y,w,PH);
+    cx.fillStyle='#00c8e0'; cx.fillRect(x,y,w,3);
+    cx.fillStyle='#00f5ff'; cx.fillRect(x,y,w,1);
+    // blinking arrows
+    if(Math.floor(this.frame/10)%2){
+      cx.fillStyle='rgba(0,245,255,0.5)';
+      cx.fillRect(x+w/2-4,y+2,8,4);
+    }
+    cx.shadowBlur=0;
+  },
+  dDisP(cx,p){
+    if(p.gone) return;
+    const flash=p.timer>80?Math.abs(Math.sin(this.frame*.25)):1;
+    cx.globalAlpha=flash*.9;
+    this.dPlatform(cx,p);
+    cx.globalAlpha=1;
+    // warning stripes when about to collapse
+    if(p.timer>60){
+      cx.globalAlpha=.4*flash;
+      cx.fillStyle='#ff6600';
+      cx.fillRect(Math.round(p.x),Math.round(p.y),Math.round(p.w),PH);
+      cx.globalAlpha=1;
+    }
+  },
+  dLadder(cx,l){
+    const x=Math.round(l.x),y=Math.round(l.y),h=Math.round(l.h);
+    // Rails (use l.w=18 for display)
+    cx.fillStyle='#007080'; cx.fillRect(x,y,3,h); cx.fillRect(x+l.w-3,y,3,h);
+    for(let ry=y;ry<y+h;ry+=8){
+      cx.fillStyle=(Math.floor((ry-y)/8)%2===0)?'#00f5ff':'#008898';
+      cx.fillRect(x+3,ry,l.w-6,3);
+    }
+    cx.shadowColor='#00f5ff'; cx.shadowBlur=5;
+    cx.strokeStyle='rgba(0,245,255,0.3)'; cx.lineWidth=1;
+    cx.strokeRect(x+.5,y+.5,l.w-1,h-1);
+    cx.shadowBlur=0;
+  },
+  // ─── DRAW CHECKPOINT ───────────────────────────────
+  dCheckpoint(cx,cp){
+    const x=Math.round(cp.x), y=Math.round(cp.y);
+    const on=cp.active;
+    // Pole
+    cx.fillStyle=on?'#ffe600':'#888888';
+    cx.shadowColor=on?'#ffe600':'transparent';
+    cx.shadowBlur=on?8:0;
+    cx.fillRect(x+6,y,2,cp.h);
+    // Flag
+    const fc=on?'#ffe600':'#44cc44';
+    const fw=on?10:8;
+    const waveX=on?Math.sin(this.frame*.12)*2:0;
+    cx.fillStyle=fc;
+    cx.shadowColor=fc; cx.shadowBlur=on?10:4;
+    cx.beginPath();
+    cx.moveTo(x+8,y);
+    cx.lineTo(x+8+fw+waveX,y+3);
+    cx.lineTo(x+8+fw/2+waveX,y+6);
+    cx.lineTo(x+8,y+10);
+    cx.closePath();
+    cx.fill();
+    cx.shadowBlur=0;
+    // Star on active
+    if(on){
+      cx.fillStyle='#fff';
+      cx.font='7px monospace'; cx.textAlign='center'; cx.textBaseline='middle';
+      cx.fillText('★',x+8+fw/2+waveX/2,y+5);
+    }
+    // Label
+    cx.fillStyle=on?'#ffe600':'rgba(255,255,255,0.5)';
+    cx.font='4px "Press Start 2P"'; cx.textAlign='center'; cx.textBaseline='top';
+    cx.fillText(on?'SAVED':'SAVE',x+8,y+cp.h+2);
+  },
+
+  // ─── CHECK CHECKPOINTS ─────────────────────────────
+  checkCheckpoints(){
+    const P=this.P;
+    if(P.dead) return;
+    this.checkpoints.forEach(cp=>{
+      if(cp.active) return; // already captured
+      if(this.hit(P.x,P.y,P.w,P.h, cp.x,cp.y,cp.w+10,cp.h)){
+        cp.active=true;
+        // Save respawn at this checkpoint
+        this.respawnX=cp.x+cp.w/2-P.w/2;
+        this.respawnY=cp.y+cp.h-P.h;
+        this.score+=50;
+        Pt.spark(cp.x+cp.w/2,cp.y+cp.h/2,'#ffe600',16);
+        // Show checkpoint popup
+        const pop=document.getElementById('pop');
+        document.getElementById('pop-ico').textContent='🚩';
+        document.getElementById('pop-ttl').textContent='CHECKPOINT!';
+        document.getElementById('pop-sub').textContent='Progress saved here';
+        pop.classList.add('show');
+        clearTimeout(this.popTimer);
+        this.popTimer=setTimeout(()=>pop.classList.remove('show'),1800);
+        try{ Au.tone(600,'square',.06,.2); Au.tone(900,'square',.06,.2,.07); Au.tone(1200,'square',.1,.25,.14); }catch(e){}
+      }
+    });
+  },
+
+  dSpike(cx,s){
+    cx.fillStyle='#aaaacc'; cx.shadowColor='#ccccff'; cx.shadowBlur=4;
+    const n=Math.ceil(s.w/8);
+    for(let i=0;i<n;i++){
+      const sx=s.x+i*8;
+      cx.beginPath();
+      cx.moveTo(sx,s.y+s.h);
+      cx.lineTo(sx+4,s.y);
+      cx.lineTo(sx+8,s.y+s.h);
+      cx.fill();
+    }
+    cx.shadowBlur=0;
+  },
+  dCollect(cx,c){
+    if(c.got) return;
+    const li=LINKS[c.li];
+    const bob=Math.sin(c.bob+this.frame*.04)*3;
+    const x=Math.round(c.x), y=Math.round(c.y+bob);
+
+    // If already visible (unlocked before or in session)
+    const visible=this.unlocked.has(li.id)||this.session.has(li.id);
+
+    if(!visible){
+      // Locked chest
+      cx.fillStyle='#3a2a0a'; cx.fillRect(x,y,c.w,c.h);
+      cx.fillStyle='#6b4c18'; cx.fillRect(x+1,y+1,c.w-2,c.h/2);
+      cx.fillStyle='#8b6420'; cx.fillRect(x,y,c.w,3);
+      // lock
+      cx.fillStyle='#ffaa00'; cx.shadowColor='#ffaa00'; cx.shadowBlur=6;
+      cx.fillRect(x+c.w/2-3,y+c.h/2-2,7,5);
+      cx.fillStyle='#5a3a00'; cx.fillRect(x+c.w/2-1,y+c.h/2-1,4,3);
+      cx.shadowBlur=0;
+      // shimmer
+      if(Math.sin(this.frame*.12+c.bob)>.6){
+        cx.fillStyle='rgba(255,200,50,0.4)';
+        cx.fillRect(x+2,y+2,5,2);
+      }
+      return;
+    }
+
+    // Icon box (revealed)
+    cx.shadowColor=li.col||'#ffe600'; cx.shadowBlur=14;
+    cx.fillStyle=li.col||'#ffe600'; cx.fillRect(x,y,c.w,c.h);
+    cx.fillStyle='#000'; cx.fillRect(x+2,y+2,c.w-4,c.h-4);
+    cx.shadowBlur=0;
+
+    cx.fillStyle=li.col||'#ffe600';
+    cx.font=`bold ${c.w-5}px monospace`;
+    cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText(li.ico.substring(0,1),x+c.w/2,y+c.h/2+1);
+  },
+  dEnemy(cx,e){
+    const x=Math.round(e.x),y=Math.round(e.y);
+    const f=Math.floor(this.frame/5)%2;
+    if(e.t==='w'||e.t==='b'){
+      const ec=e.t==='b'?'#aa00ff':'#ff3300';
+      cx.fillStyle=ec; cx.shadowColor=ec; cx.shadowBlur=8;
+      cx.fillRect(x,y+3,e.w,e.h-3); // body
+      cx.fillStyle='#000';
+      cx.fillRect(x+2,y+5,3,3); cx.fillRect(x+e.w-5,y+5,3,3); // eye sockets
+      cx.fillStyle='#fff';
+      cx.fillRect(x+3,y+6,2,2); cx.fillRect(x+e.w-4,y+6,2,2); // eyes
+      // antennae
+      cx.fillStyle=ec;
+      cx.fillRect(x+3,y,2,4); cx.fillRect(x+e.w-5,y,2,4);
+      cx.fillRect(x+2,y,3,2); cx.fillRect(x+e.w-5,y,3,2);
+      // legs
+      cx.fillStyle=e.t==='b'?'#880099':'#bb1100';
+      cx.fillRect(x+1,y+e.h+(f?0:1),3,3);
+      cx.fillRect(x+e.w-4,y+e.h+(f?1:0),3,3);
+      cx.shadowBlur=0;
+    } else if(e.t==='f'){
+      // Fireball spawner (lamp)
+      cx.fillStyle='#884400'; cx.fillRect(x,y,e.w,e.h);
+      cx.fillStyle='#ff6600'; cx.shadowColor='#ff6600'; cx.shadowBlur=8;
+      cx.fillRect(x+2,y+2,e.w-4,e.h-4);
+      cx.shadowBlur=0;
+    }
+  },
+  dFireball(cx,f){
+    const fc=['#ff6600','#ff9900','#ffcc00'][Math.floor(this.frame/3)%3];
+    cx.fillStyle=fc; cx.shadowColor=fc; cx.shadowBlur=10;
+    cx.beginPath();
+    cx.arc(f.x+5,f.y+5,5,0,Math.PI*2);
+    cx.fill();
+    cx.fillStyle='#fff8'; cx.fillRect(f.x+3,f.y+3,3,3);
+    cx.shadowBlur=0;
+  },
+  dBarrel(cx,b){
+    const x=Math.round(b.x),y=Math.round(b.y);
+    cx.fillStyle='#774400'; cx.fillRect(x,y,12,12);
+    cx.fillStyle='#aa6600'; cx.fillRect(x+1,y+1,10,10);
+    cx.fillStyle='#ffe600';
+    cx.fillRect(x+1,y+3,10,2); cx.fillRect(x+1,y+7,10,2);
+    cx.shadowColor='#884400'; cx.shadowBlur=4;
+    cx.strokeStyle='#442200'; cx.lineWidth=1;
+    cx.strokeRect(x+.5,y+.5,11,11);
+    cx.shadowBlur=0;
+  },
+  dPlayer(cx){
+    const P=this.P;
+    if(P.dead){
+      cx.save();
+      cx.translate(Math.round(P.x+P.w/2),Math.round(P.y+P.h/2));
+      cx.rotate(P.dTimer*.28);
+      this.dPShape(cx,-P.w/2,-P.h/2,P);
+      cx.restore(); return;
+    }
+    if(P.inv&&Math.floor(this.frame/4)%2===0) return;
+    this.dPShape(cx,Math.round(P.x),Math.round(P.y),P);
+  },
+  dPShape(cx,px,py,P){
+    const flip=!P.right;
+    if(flip){ cx.save(); cx.translate(px+P.w,py); cx.scale(-1,1); px=0; py=0; }
+    // shadow
+    cx.fillStyle='rgba(0,0,0,0.3)'; cx.fillRect(px+1,py+P.h+1,P.w-2,3);
+    // body
+    cx.fillStyle='#2244cc'; cx.fillRect(px+2,py+7,10,9);
+    cx.fillStyle='#3366ff'; cx.fillRect(px+3,py+8,8,7);
+    // shirt stripe
+    cx.fillStyle='#1133aa'; cx.fillRect(px+3,py+9,8,2);
+    // head
+    cx.fillStyle='#ffcc99'; cx.fillRect(px+3,py+1,8,7);
+    cx.fillStyle='#eeaa77'; cx.fillRect(px+3,py+6,8,2);
+    // hair/hat
+    cx.fillStyle='#331100'; cx.fillRect(px+3,py,8,3);
+    cx.fillStyle='#442200'; cx.fillRect(px+2,py+1,2,2); cx.fillRect(px+11,py+1,2,2);
+    // eyes
+    cx.fillStyle='#000'; cx.fillRect(px+5,py+3,2,2); cx.fillRect(px+9,py+3,2,2);
+    cx.fillStyle='#fff'; cx.fillRect(px+5,py+3,1,1); cx.fillRect(px+9,py+3,1,1);
+    // arms
+    cx.fillStyle='#ffcc99';
+    const af=Math.floor(P.aFrame/4)%2;
+    if(P.state==='climb'){
+      cx.fillRect(px+(af?0:10),py+8,3,5);
+      cx.fillRect(px+(af?10:0),py+11,3,5);
+    } else {
+      cx.fillRect(px,py+9,3,5);
+      cx.fillRect(px+11,py+9,3,5);
+    }
+    // legs
+    cx.fillStyle='#114499';
+    const lf=Math.floor(P.aFrame/3)%2;
+    if(P.state==='run'){
+      cx.fillRect(px+3,py+16,4,lf?4:3);
+      cx.fillRect(px+7,py+16,4,lf?3:4);
+    } else if(P.state==='climb'){
+      cx.fillRect(px+3,py+16,4,lf?4:3);
+      cx.fillRect(px+7,py+16,4,lf?3:4);
+    } else {
+      cx.fillRect(px+3,py+16,4,4);
+      cx.fillRect(px+7,py+16,4,4);
+    }
+    // shoes
+    cx.fillStyle='#771100';
+    if(P.state==='run'){
+      cx.fillRect(px+2,py+19+(lf?1:0),5,2);
+      cx.fillRect(px+8,py+19+(lf?0:1),5,2);
+    } else {
+      cx.fillRect(px+2,py+19,5,2);
+      cx.fillRect(px+8,py+19,5,2);
+    }
+    if(flip) cx.restore();
+  },
+
+  // ─── HUD ───────────────────────────────────────────
+  dHUD(cx){
+    // Background
+    cx.fillStyle='rgba(0,0,10,0.88)';
+    cx.fillRect(0,0,CW,56);
+    cx.fillStyle='#ff2d78'; cx.fillRect(0,54,CW,2);
+    cx.shadowColor='#ff2d78'; cx.shadowBlur=8;
+    cx.fillRect(0,54,CW,2); cx.shadowBlur=0;
+
+    cx.font='6px "Press Start 2P"';
+
+    // Score
+    cx.fillStyle='#ffe600'; cx.textAlign='left';
+    cx.fillText('SCORE',6,14);
+    cx.fillStyle='#ffffff';
+    cx.fillText(String(this.score).padStart(6,'0'),6,27);
+
+    // Hi-Score
+    cx.fillStyle='#ff2d78'; cx.textAlign='center';
+    cx.fillText('HI-SCORE',CW/2,14);
+    cx.fillStyle='#ffffff';
+    cx.fillText(String(this.hi).padStart(6,'0'),CW/2,27);
+
+    // Links counter
+    cx.fillStyle='#00f5ff'; cx.textAlign='right';
+    cx.fillText('LINKS',CW-6,14);
+    cx.fillStyle='#ffffff';
+    cx.fillText(`${this.session.size}/14`,CW-6,27);
+
+    // Lives
+    cx.font='10px monospace'; cx.textAlign='left';
+    for(let i=0;i<MAX_LIVES;i++){
+      cx.fillStyle=i<this.lives?'#ff2d78':'#333333';
+      cx.shadowColor=i<this.lives?'#ff2d78':'transparent';
+      cx.shadowBlur=i<this.lives?5:0;
+      cx.fillText('♥',4+i*22,47);
+    }
+    cx.shadowBlur=0;
+  },
+
+  // ─── PREVIEW CANVAS ────────────────────────────────
+  drawPreview(){
+    const pc=document.getElementById('pc'); if(!pc) return;
+    const cx=pc.getContext('2d');
+    const W=pc.width, H=pc.height;
+    cx.clearRect(0,0,W,H);
+
+    // bg
+    const bg=cx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#000018'); bg.addColorStop(1,'#060008');
+    cx.fillStyle=bg; cx.fillRect(0,0,W,H);
+
+    // stars
+    for(let i=0;i<15;i++){
+      const a=.3+.5*Math.abs(Math.sin(i*1.3+this.frame*.03));
+      cx.globalAlpha=a; cx.fillStyle='#fff';
+      cx.fillRect(Math.floor(i*8.7%W),Math.floor(i*5.3%H),1,1);
+    }
+    cx.globalAlpha=1;
+
+    // platforms
+    [[0,95,W],[5,65,65],[55,65,75],[10,36,50],[70,36,60]].forEach(([x,y,w])=>{
+      cx.fillStyle='#881040'; cx.fillRect(x,y,w,5);
+      cx.fillStyle='#ff2d78'; cx.fillRect(x,y+1,w,3);
+      cx.fillStyle='#ff6ea3'; cx.fillRect(x,y,w,1);
+    });
+
+    // ladders
+    [[20,36,34],[88,36,34]].forEach(([x,y,h])=>{
+      cx.fillStyle='#007080'; cx.fillRect(x,y,2,h); cx.fillRect(x+8,y,2,h);
+      for(let r=y;r<y+h;r+=7){ cx.fillStyle='#00f5ff'; cx.fillRect(x+2,r,6,2); }
+    });
+
+    // player (animated)
+    const pf=Math.floor(this.frame/6)%2;
+    const py2=88;
+    cx.fillStyle='#2244cc'; cx.fillRect(13,py2-13,10,9);
+    cx.fillStyle='#ffcc99'; cx.fillRect(14,py2-19,8,7);
+    cx.fillStyle='#331100'; cx.fillRect(14,py2-20,8,3);
+    cx.fillStyle='#000'; cx.fillRect(16,py2-17,2,2); cx.fillRect(19,py2-17,2,2);
+    cx.fillStyle='#771100'; cx.fillRect(13,py2-5+(pf?1:0),5,2); cx.fillRect(18,py2-5+(pf?0:1),5,2);
+
+    // collectible (glowing)
+    const bob=Math.sin(this.frame*.08)*2;
+    cx.fillStyle='#ffe600'; cx.shadowColor='#ffe600'; cx.shadowBlur=10;
+    cx.fillRect(59,59+bob,12,12); cx.shadowBlur=0;
+    cx.fillStyle='#000'; cx.fillRect(61,61+bob,8,8);
+    cx.fillStyle='#ffe600'; cx.font='bold 7px monospace'; cx.textAlign='center'; cx.textBaseline='middle';
+    cx.fillText('🌳',65,66+bob);
+
+    // enemy
+    const ef=Math.floor(this.frame/5)%2;
+    cx.fillStyle='#ff3300'; cx.shadowColor='#ff3300'; cx.shadowBlur=6;
+    cx.fillRect(85,58,10,10); cx.shadowBlur=0;
+    cx.fillStyle='#fff'; cx.fillRect(87,60,2,2); cx.fillRect(91,60,2,2);
+    cx.fillStyle='#ff3300';
+    cx.fillRect(86,68+(ef?0:1),3,3); cx.fillRect(92,68+(ef?1:0),3,3);
+  },
+};
+
+// ═══════════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load',()=>G.init());
+</script>
 </body>
-
 </html>
